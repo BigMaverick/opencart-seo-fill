@@ -16,54 +16,109 @@ $registry->set('load', $loader);
 $db = new DB(DB_DRIVER, DB_HOSTNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
 $registry->set('db', $db);
 
-function rus2translit($string) {
-    $converter = array(
-        'а' => 'a',   'б' => 'b',   'в' => 'v',
-        'г' => 'g',   'д' => 'd',   'е' => 'e',
-        'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
-        'и' => 'i',   'й' => 'y',   'к' => 'k',
-        'л' => 'l',   'м' => 'm',   'н' => 'n',
-        'о' => 'o',   'п' => 'p',   'р' => 'r',
-        'с' => 's',   'т' => 't',   'у' => 'u',
-        'ф' => 'f',   'х' => 'h',   'ц' => 'c',
-        'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
-        'ь' => '\'',  'ы' => 'y',   'ъ' => '\'',
-        'э' => 'e',   'ю' => 'yu',  'я' => 'ya',		
-		
-        'і' => 'i',   'ї' => 'ji',  'є' => 'je',
-        
-        'А' => 'A',   'Б' => 'B',   'В' => 'V',
-        'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
-        'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
-        'И' => 'I',   'Й' => 'Y',   'К' => 'K',
-        'Л' => 'L',   'М' => 'M',   'Н' => 'N',
-        'О' => 'O',   'П' => 'P',   'Р' => 'R',
-        'С' => 'S',   'Т' => 'T',   'У' => 'U',
-        'Ф' => 'F',   'Х' => 'H',   'Ц' => 'C',
-        'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
-        'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
-        'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',		
-		
-        'І' => 'I',   'Ї' => 'JI',  'Є' => 'JE',
-    );
-    return strtr($string, $converter);
-}
+function seoURL($args) {
+          $force_keyword = false;
 
-function seoURL($str) {
-    // переводим в транслит
-    $str = rus2translit($str);
-    // в нижний регистр
-    $str = strtolower($str);
-    // заменям все ненужное нам на "-"
-    $str = preg_replace('~[^-a-z0-9_]+~u', '-', $str);
-    // удаляем начальные и конечные '-'
-    $str = trim($str, '-');
-	// добавляем рандомное число в конце
-    $url = ($str . '-' . rand(10,99));
-	
-    return $url;
-}
+          $rules = array(
+            '¹' => 1,
+            '²' => 2,
+            '³' => 3,
 
+            'º' => 0,
+            '°' => 0,
+			'А' => 'a',
+			'Б'	=> 'b',
+			'В'	=> 'v',
+			'Г'	=> 'g',
+			'Д'	=> 'd',
+			'Е'	=> 'e',
+			'Ж'	=> 'zh',
+			'З'	=> 'z',
+			'И'	=> 'i',
+			'Й'	=> 'y',
+			'К'	=> 'k',
+			'Л'	=> 'l',
+			'М'	=> 'm',
+			'Н'	=> 'n',
+			'О'	=> 'o',
+			'П'	=> 'p',
+			'Р'	=> 'r',
+			'С'	=> 's',
+			'Т'	=> 't',
+			'У'	=> 'u',
+			'Ф'	=> 'f',
+			'Х'	=> 'h',
+			'Ц'	=> 'ts',
+			'Ч'	=> 'ch',
+			'Ш'	=> 'sh',
+			'Щ'	=> 'sht',
+			'Ъ'	=> 'a',
+			'Ь'	=> 'y',
+			'Ю'	=> 'yu',
+			'Я'	=> 'ya',
+			
+			'а' => 'a',
+			'б'	=> 'b',
+			'в'	=> 'v',
+			'г'	=> 'g',
+			'д'	=> 'd',
+			'е'	=> 'e',
+			'ж'	=> 'zh',
+			'з'	=> 'z',
+			'и'	=> 'i',
+			'й'	=> 'y',
+			'к'	=> 'k',
+			'л'	=> 'l',
+			'м'	=> 'm',
+			'н'	=> 'n',
+			'о'	=> 'o',
+			'п'	=> 'p',
+			'р'	=> 'r',
+			'с'	=> 's',
+			'т'	=> 't',
+			'у'	=> 'u',
+			'ф'	=> 'f',
+			'х'	=> 'h',
+			'ц'	=> 'ts',
+			'ч'	=> 'ch',
+			'ш'	=> 'sh',
+			'щ'	=> 'sht',
+			'ъ'	=> 'a',
+			'ь'	=> 'y',
+			'ю'	=> 'yu',
+			'я'	=> 'ya'
+
+
+          );
+
+            // Setting url string
+            $str = $args;
+            $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
+            $str = strtr($str, $rules);
+            $str = preg_replace('/([^a-zA-Z0-9]|-)+/', '-', $str);
+            $str = trim($str, '-');
+            $str = strtolower($str);
+
+            // Avoid duplication
+            global $db;
+            if ($db) {
+              $okay = false;
+              $counter = 1;
+              $modifier = '';
+              do {
+                if($counter > 1)
+                  $modifier = '-' . $counter;
+                $result = $db->query("SELECT COUNT(*) as `total` FROM " . DB_PREFIX . "url_alias WHERE keyword = '" . $db->escape($str . $modifier) . "' AND query != '" . $args['query'] . "'");
+                if($result->row['total'] == 0) {
+                  $str .= $modifier;
+                  $okay = true;
+                } else
+                  $counter++;
+              } while($okay == false);
+            }
+
+            return $str;
+          }
 ?>
 <html>
     <head>
