@@ -108,7 +108,7 @@ function seoURL($args) {
               do {
                 if($counter > 1)
                   $modifier = '-' . $counter;
-                $result = $db->query("SELECT COUNT(*) as `total` FROM " . DB_PREFIX . "url_alias WHERE keyword = '" . $db->escape($str . $modifier) . "' AND query != '" . $args['query'] . "'");
+                $result = $db->query("SELECT COUNT(*) as `total` FROM " . DB_PREFIX . "url_alias WHERE keyword = '" . $db->escape($str . $modifier) . "'");
                 if($result->row['total'] == 0) {
                   $str .= $modifier;
                   $okay = true;
@@ -152,9 +152,13 @@ function seoURL($args) {
     <body>
         <center>
         <h1>Script by WebMakers</h1>
-		<p><a href="https://webmakers.com.ua" target="_blank">https://webmakers.com.ua</a></p>
+		<p>https://webmakers.com.ua</a></p>
+        <br>
+        <h1>Modified by BigMaverick</h1>
+        <p><a href="https://github.com/BigMaverick" target="_blank">https://github.com/BigMaverick</a></p>
 		<br>
 <?php
+$force = isset($_GET['force']);
 
 if(isset($_GET['products'])) {
 $products   = $db->query("SELECT * FROM " . DB_PREFIX . "product");
@@ -165,7 +169,7 @@ foreach($products as $product) {
     $url = $db->query("SELECT * FROM " . DB_PREFIX . "url_alias WHERE query = 'product_id=" . (int)$product['product_id'] . "'");
     $url = $url->rows;
     
-    if(!empty($url)) {
+    if(!empty($url) && !$force) {
         echo 'В товаре с id=' . $product['product_id'] . '. URL уже существует (перезапись не производится).<br><hr>';
     } else {
         echo 'Получение информации о товаре с id=' . $product['product_id'] . '...<br>';
@@ -173,9 +177,10 @@ foreach($products as $product) {
         $info = $info->rows;
         
         foreach($info as $data) {        
+            if(!empty($url))
+                $db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE url_alias_id = " . $url[0]["url_alias_id"] . "");
             echo 'Товар: ' . $data['name'] . ' | URL: ' . seoURL($data['name']);
             $data['name'] = seoURL($data['name']);
-            sleep(1);
             $db->query("INSERT INTO " . DB_PREFIX . "url_alias SET query = 'product_id=" . (int)$product['product_id'] . "', keyword = '" . $db->escape($data['name']) . "'");
             echo '<br>URL сгенерирован!<br><hr>';
         }
@@ -196,7 +201,7 @@ foreach($categories as $category) {
     $url = $db->query("SELECT * FROM " . DB_PREFIX . "url_alias WHERE query = 'category_id=" . (int)$category['category_id'] . "'");
     $url = $url->rows;
     
-    if(!empty($url)) {
+    if(!empty($url) && !$force) {
         echo 'В категории с id=' . $category['category_id'] . '. URL уже существует (перезапись не производится).<br><hr>';
     } else {
         echo 'Получение информации о категории с id=' . $category['category_id'] . '...<br>';
@@ -204,9 +209,10 @@ foreach($categories as $category) {
         $info = $info->rows;
         
         foreach($info as $data) {        
+            if(!empty($url))
+                $db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE url_alias_id = " . $url[0]["url_alias_id"] . "");
             echo 'Категория: ' . $data['name'] . ' | URL: ' . seoURL($data['name']);
             $data['name'] = seoURL($data['name']);
-            sleep(1);
             $db->query("INSERT INTO " . DB_PREFIX . "url_alias SET query = 'category_id=" . (int)$category['category_id'] . "', keyword = '" . $db->escape($data['name']) . "'");
             echo '<br>URL сгенерирован!<br><hr>';
         }
@@ -227,17 +233,18 @@ foreach($manufacturers as $manufacturer) {
     $url = $db->query("SELECT * FROM " . DB_PREFIX . "url_alias WHERE query = 'manufacturer_id=" . (int)$manufacturer['manufacturer_id'] . "'");
     $url = $url->rows;
     
-    if(!empty($url)) {
+    if(!empty($url) && !$force) {
         echo 'В производителе с id=' . $manufacturer['manufacturer_id'] . '. URL уже существует (перезапись не производится).<br><hr>';
     } else {
         echo 'Получение информации о производителе с id=' . $manufacturer['manufacturer_id'] . '...<br>';
-        $info = $db->query("SELECT * FROM " . DB_PREFIX . "manufacturer_description WHERE manufacturer_id = '" . $manufacturer['manufacturer_id'] . "' LIMIT 1");
+        $info = $db->query("SELECT * FROM " . DB_PREFIX . "manufacturer WHERE manufacturer_id = '" . $manufacturer['manufacturer_id'] . "' LIMIT 1");
         $info = $info->rows;
         
         foreach($info as $data) {        
+            if(!empty($url))
+                $db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE url_alias_id = " . $url[0]["url_alias_id"] . "");
             echo 'производитель: ' . $data['name'] . ' | URL: ' . seoURL($data['name']);
             $data['name'] = seoURL($data['name']);
-            sleep(1);
             $db->query("INSERT INTO " . DB_PREFIX . "url_alias SET query = 'manufacturer_id=" . (int)$manufacturer['manufacturer_id'] . "', keyword = '" . $db->escape($data['name']) . "'");
             echo '<br>URL сгенерирован!<br><hr>';
         }
@@ -257,7 +264,7 @@ foreach($informationp as $information) {
     $url = $db->query("SELECT * FROM " . DB_PREFIX . "url_alias WHERE query = 'information_id=" . (int)$information['information_id'] . "'");
     $url = $url->rows;
     
-    if(!empty($url)) {
+    if(!empty($url) && !$force) {
         echo 'В статье с id=' . $information['information_id'] . '. URL уже существует (перезапись не производится).<br><hr>';
     } else {
         echo 'Получение информации для статьи с id=' . $information['information_id'] . '...<br>';
@@ -265,9 +272,10 @@ foreach($informationp as $information) {
         $info = $info->rows;
         
         foreach($info as $data) {        
+            if(!empty($url))
+                $db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE url_alias_id = " . $url[0]["url_alias_id"] . "");
             echo 'Статья: ' . $data['title'] . ' | URL: ' . seoURL($data['title']);
             $data['title'] = seoURL($data['title']);
-            sleep(1);
             $db->query("INSERT INTO " . DB_PREFIX . "url_alias SET query = 'information_id=" . (int)$information['information_id'] . "', keyword = '" . $db->escape($data['title']) . "'");
             echo '<br>URL сгенерирован!<br><hr>';
         }
@@ -279,10 +287,17 @@ echo '<h2>Все сделано!</h3><a href="javascript:history.back(1)" class=
 }
 
 else {
-    echo '<p>Сгенерировать SEO-URL для <a href="?products">товаров</a></p>';
-    echo '<p>Сгенерировать SEO-URL для <a href="?categories">категорий</a></p>';
-    echo '<p>Сгенерировать SEO-URL для <a href="?manufacturers">производителей</a></p>';
-    echo '<p>Сгенерировать SEO-URL для <a href="?information">статей</a></p>';
+    echo '<p>Сгенерировать SEO-URL для <a href="?products">товаров</a>. ';
+    echo 'Перегенерировать все SEO-URL для <a href="?products&force">товаров</a></p>';
+    
+    echo '<p>Сгенерировать SEO-URL для <a href="?categories">категорий</a>. ';
+    echo' Перегенерировать все SEO-URL для <a href="?categories&force">категорий</a></p>';
+    
+    echo '<p>Сгенерировать SEO-URL для <a href="?manufacturers">производителей</a>. ';
+    echo 'Перегенерировать все SEO-URL для <a href="?manufacturers&force">производителей</a></p>';
+    
+    echo '<p>Сгенерировать SEO-URL для <a href="?information">статей</a>. ';
+    echo 'Перегенерировать все SEO-URL для <a href="?information&force">статей</a></p>';
 }
 
 ?>
